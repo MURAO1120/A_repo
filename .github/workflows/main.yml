@@ -16,6 +16,7 @@ jobs:
       TARGET_REPO: MURAO1120/B_repo
       FEATURE_BRANCH: feature/signal-ci
       WORKDIR: ${{ github.workspace }}/b-repo
+      TOKEN: ${{ secrets.GENERAL_TOKEN_FOR_ACTIONS }}
 
     steps:
       # A_repo をチェックアウト
@@ -31,7 +32,7 @@ jobs:
       # B_repo をクローンして main をチェックアウト
       - name: Clone B_repo
         run: |
-          git clone https://github.com/${{ env.TARGET_REPO }} $WORKDIR
+          git clone https://x-access-token:${{ env.TOKEN }}@github.com/${{ env.TARGET_REPO }} $WORKDIR
           cd $WORKDIR
           git fetch origin main
           git checkout main
@@ -47,33 +48,24 @@ jobs:
             git checkout -b $FEATURE_BRANCH
           fi
 
-      # コピー前にデバッグ：コピー元とコピー先の確認
-      - name: Debug before copy
+      # B_repo/src の削除と A_repo/src のコピー
+      - name: Clear and copy src from A_repo to B_repo
         run: |
-          echo "A_repo/src content:"
-          ls -la ${{ github.workspace }}/src
-          echo "B_repo/src content before deletion:"
-          ls -la $WORKDIR/src || echo "Directory does not exist"
-
-      # コピー先ディレクトリの中身を削除
-      - name: Clear B_repo/src
-        run: |
+          # B_repo/src が存在しなければ作成
           mkdir -p $WORKDIR/src
+          # 既存のファイル・サブディレクトリ・隠しファイルを完全削除
           rm -rf $WORKDIR/src/* $WORKDIR/src/.[!.]* || true
           echo "B_repo/src after deletion (should be empty):"
           ls -la $WORKDIR/src
-
-      # コピー後にデバッグ：コピーが成功したか確認
-      - name: Copy src from A_repo to B_repo
-        run: |
+          # A_repo/src の内容をコピー
           cp -r ${{ github.workspace }}/src/* $WORKDIR/src/
           echo "B_repo/src after copy:"
           ls -la $WORKDIR/src
 
-      # 変更をコミットして push
+      # Git add, commit, push
       - name: Commit and push changes
         run: |
           cd $WORKDIR
-          git add src/*
+          git add src
           git commit -m "Sync src from A_repo" || echo "No changes to commit"
-          git push https://x-access-token:${{ secrets.GENERAL_TOKEN_FOR_ACTIONS }}@github.com/${{ env.TARGET_REPO }} $FEATURE_BRANCH --force
+          git push -u origin $FEATURE_BRANCH --force
