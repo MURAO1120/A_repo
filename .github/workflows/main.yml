@@ -40,24 +40,4 @@ jobs:
       - name: Prepare feature branch
         run: |
           cd $WORKDIR
-          if git ls-remote --exit-code --heads origin $FEATURE_BRANCH; then
-            git checkout $FEATURE_BRANCH
-            git reset --hard origin/main
-          else
-            git checkout -b $FEATURE_BRANCH
-          fi
-
-      # コピー先ディレクトリの中身を削除してからコピー
-      - name: Clear and copy src from A_repo to B_repo
-        run: |
-          mkdir -p $WORKDIR/src
-          rm -rf $WORKDIR/src/*         # コピー先の中身をすべて削除
-          cp -r ${{ github.workspace }}/src/* $WORKDIR/src/
-
-      # 変更をコミットして push（PAT 使用）
-      - name: Commit and push changes
-        run: |
-          cd $WORKDIR
-          git add src/*
-          git commit -m "Sync src from A_repo" || echo "No changes to commit"
-          git push https://x-access-token:${{ secrets.GENERAL_TOKEN_FOR_ACTIONS }}@github.com/${{ env.TARGET_REPO }} $FEATURE_BRANCH --force
+          if git ls-remote --exit-code --heads origin $FEATURE_BRANCH; t_
