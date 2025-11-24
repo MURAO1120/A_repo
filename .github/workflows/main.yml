@@ -47,10 +47,11 @@ jobs:
             git checkout -b $FEATURE_BRANCH
           fi
 
-      # src をコピー（コピー先ディレクトリ作成済み）
-      - name: Copy src from A_repo to B_repo
+      # コピー先ディレクトリの中身を削除してからコピー
+      - name: Clear and copy src from A_repo to B_repo
         run: |
           mkdir -p $WORKDIR/src
+          rm -rf $WORKDIR/src/*         # コピー先の中身をすべて削除
           cp -r ${{ github.workspace }}/src/* $WORKDIR/src/
 
       # 変更をコミットして push（PAT 使用）
