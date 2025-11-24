@@ -40,4 +40,13 @@ jobs:
       - name: Prepare feature branch
         run: |
           cd $WORKDIR
-          if git ls-remote --exit-code --heads origin $FEATURE_BRANCH; t_
+          if git ls-remote --exit-code --heads origin $FEATURE_BRANCH; then
+            git checkout $FEATURE_BRANCH
+            git reset --hard origin/main
+          else
+            git checkout -b $FEATURE_BRANCH
+          fi
+
+      # コピー先ディレクトリの中身をすべて削除してからコピー
+      - name: Clear and copy src from A_repo to B_repo
+        run: |
