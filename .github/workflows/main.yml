@@ -1,20 +1,21 @@
-name: Sync Signal CI branch from B_repo main
+name: Sync src from A_repo to B_repo
 
 on:
   workflow_dispatch:
-  push:   # push もトリガーに追加
+  push:
 
 permissions:
   contents: write
   actions: write
 
 jobs:
-  sync-signal-branch:
+  push-src-to-b-repo:
     runs-on: ubuntu-latest
 
     env:
-      BRANCH_NAME: feature/signal-ci
       TARGET_REPO: MURAO1120/B_repo
+      FEATURE_BRANCH: feature/signal-ci
+      WORKDIR: ${{ github.workspace }}/b-repo
 
     steps:
       - name: Checkout A_repo
@@ -27,25 +28,31 @@ jobs:
 
       - name: Clone B_repo
         run: |
-          git clone https://github.com/${{ env.TARGET_REPO }} B_repo
-          cd B_repo
+          git clone https://github.com/${{ env.TARGET_REPO }} $WORKDIR
+          cd $WORKDIR
           git fetch origin main
-          git checkout main
+          git checkout main || git checkout -b main
 
-      - name: Check if feature branch exists
+      - name: Prepare feature branch
         run: |
-          cd B_repo
-          if git ls-remote --exit-code --heads origin $BRANCH_NAME; then
-            echo "Branch $BRANCH_NAME exists. Resetting it to main."
-            git checkout $BRANCH_NAME
+          cd $WORKDIR
+          if git ls-remote --exit-code --heads origin $FEATURE_BRANCH; then
+            git checkout $FEATURE_BRANCH
             git reset --hard origin/main
           else
-            echo "Branch $BRANCH_NAME does not exist. Creating it."
-            git checkout -b $BRANCH_NAME
+            git checkout -b $FEATURE_BRANCH
           fi
-          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
 
-      - name: Push branch to B_repo
+      - name: Copy src from A_repo to B_repo
         run: |
-          cd B_repo
-          git push origin $
+          cp -r ${{ github.workspace }}/src/* $WORKDIR/src/
+
+      - name: Commit and push changes
+        run: |
+          cd $WORKDIR
+          git add src/*
+          git commit -m "Sync src from A_repo" || echo "No changes to commit"
+          git push origin $FEATURE_BRANCH --force
+        env:
+          GITHUB_TOKEN: ${{ secrets.GENERAL_TOKEN_FOR_ACTIONS }}
+
