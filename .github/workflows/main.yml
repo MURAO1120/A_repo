@@ -47,17 +47,28 @@ jobs:
             git checkout -b $FEATURE_BRANCH
           fi
 
-      # コピー先ディレクトリの中身を完全削除してからコピー
-      - name: Clear B_repo/src and verify
+      # コピー前にデバッグ：コピー元とコピー先の確認
+      - name: Debug before copy
+        run: |
+          echo "A_repo/src content:"
+          ls -la ${{ github.workspace }}/src
+          echo "B_repo/src content before deletion:"
+          ls -la $WORKDIR/src || echo "Directory does not exist"
+
+      # コピー先ディレクトリの中身を削除
+      - name: Clear B_repo/src
         run: |
           mkdir -p $WORKDIR/src
           rm -rf $WORKDIR/src/* $WORKDIR/src/.[!.]* || true
           echo "B_repo/src after deletion (should be empty):"
           ls -la $WORKDIR/src
 
+      # コピー後にデバッグ：コピーが成功したか確認
       - name: Copy src from A_repo to B_repo
         run: |
           cp -r ${{ github.workspace }}/src/* $WORKDIR/src/
+          echo "B_repo/src after copy:"
+          ls -la $WORKDIR/src
 
       # 変更をコミットして push
       - name: Commit and push changes
