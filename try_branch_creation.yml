@@ -1,0 +1,53 @@
+name: Sync Signal CI branch from B_repo main
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  sync-signal-branch:
+    runs-on: ubuntu-latest
+
+    env:
+      BRANCH_NAME: feature/signal-ci
+      TARGET_REPO: MURAO1120/B_repo
+
+    steps:
+      - name: Checkout A_repo
+        uses: actions/checkout@v4
+
+      - name: Configure git
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@users.noreply.github.com"
+
+      - name: Clone B_repo
+        run: |
+          git clone https://github.com/${{ env.TARGET_REPO }} B_repo
+          cd B_repo
+          git fetch origin main
+          git checkout main
+
+      - name: Check if feature branch exists
+        run: |
+          cd B_repo
+          if git ls-remote --exit-code --heads origin $BRANCH_NAME; then
+            echo "Branch $BRANCH_NAME exists. Resetting it to main."
+            git checkout $BRANCH_NAME
+            git reset --hard origin/main
+          else
+            echo "Branch $BRANCH_NAME does not exist. Creating it."
+            git checkout -b $BRANCH_NAME
+          fi
+          # 環境変数に保存して push ステップで使えるようにする
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+
+      - name: Push branch to B_repo
+        run: |
+          cd B_repo
+          git push origin $BRANCH_NAME --force
+        env:
+          GITHUB_TOKEN: ${{ secrets.GENERAL_TOKEN_FOR_ACTIONS }}
