@@ -18,14 +18,17 @@ jobs:
       WORKDIR: ${{ github.workspace }}/b-repo
 
     steps:
+      # A_repo をチェックアウト
       - name: Checkout A_repo
         uses: actions/checkout@v4
 
+      # Git 設定
       - name: Configure git
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@users.noreply.github.com"
 
+      # B_repo をクローンして main をチェックアウト
       - name: Clone B_repo
         run: |
           git clone https://github.com/${{ env.TARGET_REPO }} $WORKDIR
@@ -33,6 +36,7 @@ jobs:
           git fetch origin main
           git checkout main || git checkout -b main
 
+      # feature ブランチを作成 or リセット
       - name: Prepare feature branch
         run: |
           cd $WORKDIR
@@ -43,10 +47,13 @@ jobs:
             git checkout -b $FEATURE_BRANCH
           fi
 
+      # src をコピー（コピー先ディレクトリ作成済み）
       - name: Copy src from A_repo to B_repo
         run: |
+          mkdir -p $WORKDIR/src
           cp -r ${{ github.workspace }}/src/* $WORKDIR/src/
 
+      # 変更をコミットして push
       - name: Commit and push changes
         run: |
           cd $WORKDIR
@@ -55,4 +62,3 @@ jobs:
           git push origin $FEATURE_BRANCH --force
         env:
           GITHUB_TOKEN: ${{ secrets.GENERAL_TOKEN_FOR_ACTIONS }}
-
