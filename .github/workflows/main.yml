@@ -45,6 +45,7 @@ jobs:
             git reset --hard main
           else
             git checkout -b $FEATURE_BRANCH
+          fi
 
       # コピー先ディレクトリの中身を完全削除してからコピー
       - name: Clear and copy src from A_repo to B_repo
