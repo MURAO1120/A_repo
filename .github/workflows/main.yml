@@ -48,13 +48,15 @@ jobs:
           fi
 
       # コピー先ディレクトリの中身を完全削除してからコピー
-      - name: Clear and copy src from A_repo to B_repo
+      - name: Clear B_repo/src and verify
         run: |
-          # B_repo/src が存在しなければ作成
           mkdir -p $WORKDIR/src
-          # 既存のファイル・サブディレクトリ・隠しファイルを完全削除
           rm -rf $WORKDIR/src/* $WORKDIR/src/.[!.]* || true
-          # A_repo/src の内容をコピー
+          echo "B_repo/src after deletion (should be empty):"
+          ls -la $WORKDIR/src
+
+      - name: Copy src from A_repo to B_repo
+        run: |
           cp -r ${{ github.workspace }}/src/* $WORKDIR/src/
 
       # 変更をコミットして push
