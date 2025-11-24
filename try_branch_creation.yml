@@ -2,6 +2,7 @@ name: Sync Signal CI branch from B_repo main
 
 on:
   workflow_dispatch:
+  push:   # push もトリガーに追加
 
 permissions:
   contents: write
@@ -42,12 +43,9 @@ jobs:
             echo "Branch $BRANCH_NAME does not exist. Creating it."
             git checkout -b $BRANCH_NAME
           fi
-          # 環境変数に保存して push ステップで使えるようにする
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
 
       - name: Push branch to B_repo
         run: |
           cd B_repo
-          git push origin $BRANCH_NAME --force
-        env:
-          GITHUB_TOKEN: ${{ secrets.GENERAL_TOKEN_FOR_ACTIONS }}
+          git push origin $
