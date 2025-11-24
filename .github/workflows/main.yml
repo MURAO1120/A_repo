@@ -47,12 +47,15 @@ jobs:
             git checkout -b $FEATURE_BRANCH
           fi
 
-      # コピー先ディレクトリの中身をすべて削除してからコピー
+      # コピー先ディレクトリの中身を完全削除してからコピー
       - name: Clear and copy src from A_repo to B_repo
         run: |
+          # ディレクトリ作成（なければ作る）
           mkdir -p $WORKDIR/src
-          shopt -s dotglob
+          # 既存の src 内を完全削除（隠しファイル・サブディレクトリ含む）
           rm -rf $WORKDIR/src/*
+          rm -rf $WORKDIR/src/.[!.]* || true
+          # A_repo/src をコピー
           cp -r ${{ github.workspace }}/src/* $WORKDIR/src/
 
       # 変更をコミットして push
