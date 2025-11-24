@@ -53,12 +53,10 @@ jobs:
           mkdir -p $WORKDIR/src
           cp -r ${{ github.workspace }}/src/* $WORKDIR/src/
 
-      # 変更をコミットして push
+      # 変更をコミットして push（PAT 使用）
       - name: Commit and push changes
         run: |
           cd $WORKDIR
           git add src/*
           git commit -m "Sync src from A_repo" || echo "No changes to commit"
-          git push origin $FEATURE_BRANCH --force
-        env:
-          GITHUB_TOKEN: ${{ secrets.GENERAL_TOKEN_FOR_ACTIONS }}
+          git push https://x-access-token:${{ secrets.GENERAL_TOKEN_FOR_ACTIONS }}@github.com/${{ env.TARGET_REPO }} $FEATURE_BRANCH --force
